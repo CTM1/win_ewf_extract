@@ -1,10 +1,12 @@
+import modules.registry
+
 import importlib
 import argparse
 import yaml
 import os
 
 def main():
-    # Arguments
+    # Arguments and help
     parser = argparse.ArgumentParser(description='Windows EWF Artifact Extractor')
     parser.add_argument("-c","--cfg", type=str, help='YAML configuration file - Possible fields: extract_registry\nextract_browsers\nextract_event_logs\nextract_mft')
     parser.add_argument("-o", "--output", type=str, help="Output directory for extracted artifacts - ./output by default")
