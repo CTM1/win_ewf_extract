@@ -1,0 +1,10 @@
+registry: true
+browsers:
+  chrome: true
+  firefox: true
+  edge: true
+event_logs:
+  system: true
+  security: true
+  application: false
+mft: true
