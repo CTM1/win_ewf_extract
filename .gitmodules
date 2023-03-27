@@ -1,0 +1,3 @@
+[submodule "pytsk"]
+	path = pytsk
+	url = https://github.com/py4n6/pytsk/
