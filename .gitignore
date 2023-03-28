@@ -6,6 +6,7 @@ __pycache__/
 # Ignore EWF files
 *.e0*
 *.ewf
+images/*
 
 # C extensions
 *.so
