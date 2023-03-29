@@ -66,22 +66,22 @@ def extract(ewf_file, output_dir, config):
 
         # Recursively parse config looking for registry files
         print("[+] Looking for registry files recursively in Windows\System32\config\n")
-        data = recurse_files(1, fs, config_folder.as_directory(), [], [], [""])
+        data = recurse_files(1, fs, config_folder.as_directory(), [], [], [""], output_dir)
 
-        with open(os.path.join(registry_output_dir, "registry.csv"), "w", newline="", encoding="utf-8") as f:
+        with open(os.path.join(registry_output_dir, "registry_hive_files.csv"), "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["Hive", "Key Path", "Value Name", "Value Type", "Value Data", "Created At", "Modified At", "Deleted At"])
 
             for reg_info in data:
                 hive = reg_info[0]
-                key_path = reg_info[-1]
+                key_path = reg_info[8]
                 created_at = reg_info[4]
                 modified_at = reg_info[5]
                 deleted_at = reg_info[6]
                 writer.writerow([hive, key_path, "", "", "", created_at, modified_at, deleted_at])
 
 
-def recurse_files(part, fs, root_dir, dirs, data, parent):
+def recurse_files(part, fs, root_dir, dirs, data, parent, output_dir):
     dirs.append(root_dir.info.fs_file.meta.addr)
     for fs_object in root_dir:
         # Skip ".", ".." or directory entries without a name.
@@ -92,30 +92,34 @@ def recurse_files(part, fs, root_dir, dirs, data, parent):
             continue
         try:
             file_name = fs_object.info.name.name
-            file_path = "{}/{}".format(str(parent), str(file_name))
+            file_path = "Windows\\System32\\config\\{}".format("".join("{}/{}".format(str(parent), str(file_name))).replace("/", "\\"))
             if file_name in [b"SYSTEM", b"SAM", b"SECURITY", b"SOFTWARE", b"NTUSER.DAT", b"DEFAULT"]:
                 if "RegBack" in file_path:
-                    print("[+] Found backup registry hive: {}".format(file_name))
+                    print("[+] Found backup registry hive: {}".format(file_name.decode("utf-8")))
                     offset = fs_object.info.meta.addr * fs.info.block_size
                     create = convert_time(fs_object.info.meta.crtime)
                     change = convert_time(fs_object.info.meta.ctime)
                     modify = convert_time(fs_object.info.meta.mtime)
                     size = fs_object.info.meta.size
 
-                    # oh wow i love python so con
                     data.append(["PARTITION {}".format(part), str(file_name), file_ext,
-                        f_type, create, change, modify, size,"Windows\\System32\\config\\{}".format("".join(file_path).replace("/", "\\"))])
+                        f_type, create, change, modify, size, file_path])
+
+                    print("[+] Writing hive {}.bak to {}\n".format(file_name.decode("utf-8"), output_dir))
+                    file_writer(fs_object, file_name, ".bak", output_dir)
                 else:
-                    print("[+] Found registry hive: {}".format(file_name))
+                    print("[+] Found registry hive: {}".format(file_name.decode("utf-8")))
                     offset = fs_object.info.meta.addr * fs.info.block_size
                     create = convert_time(fs_object.info.meta.crtime)
                     change = convert_time(fs_object.info.meta.ctime)
                     modify = convert_time(fs_object.info.meta.mtime)
                     size = fs_object.info.meta.size
 
-                    #TODO FIX THIS SHIT
                     data.append(["PARTITION {}".format(part), str(file_name), file_ext,
-                        f_type, create, change, modify, size,"Windows\\System32\\config\\{}".format("".join(file_path).replace("/", "\\"))])
+                        f_type, create, change, modify, size, file_path])
+
+                    print("[+] Writing hive {} to {}\n".format(file_name.decode("utf-8"), output_dir))
+                    file_writer(fs_object, file_name, "", output_dir)
 
             try:
                 if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
@@ -138,7 +142,7 @@ def recurse_files(part, fs, root_dir, dirs, data, parent):
                 # This ensures that we don't recurse into a directory
                 # above the current level and thus avoid circular loops.
                 if inode not in dirs:
-                    recurse_files(part, fs, sub_directory, dirs, data, parent)
+                    recurse_files(part, fs, sub_directory, dirs, data, parent, output_dir)
                 parent.pop(-1)
 
         except IOError:
@@ -163,6 +167,12 @@ def find_file(path, fs, root_dir):
                 return find_file(b'/'.join(components[1:]), fs, sub_dir)
     # If we get here, the file was not found
     return None
+
+def file_writer(fs_object, name, ext, output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    with open(os.path.join(output_dir, name.decode("utf-8")), "wb") as outfile:
+        outfile.write(fs_object.read_random(0, fs_object.info.meta.size))
 
 def convert_time(ts):
     if str(ts) == "0":
