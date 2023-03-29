@@ -2,6 +2,7 @@ import os
 import sys
 import csv
 import subprocess
+from datetime import datetime
 
 import pytsk3
 import pyewf
@@ -25,6 +26,7 @@ class EWFImgInfo(pytsk3.Img_Info):
         return self._ewf_handle.get_media_size()
 
 def extract(ewf_file, output_dir, config):
+    print("\n[*] REGISTRY MODULE [*]\n")
     registry_output_dir = os.path.join(output_dir, "registry")
 
     if not os.path.exists(registry_output_dir):
@@ -38,50 +40,131 @@ def extract(ewf_file, output_dir, config):
 
     vol = pytsk3.Volume_Info(img_info)
 
+    print("[+] Iterating over partitions to find FS\n")
     for part in vol:
-        if part.len > 2048 and b"data partition" in part.desc:
-            fs = pytsk3.FS_Info(img_info, offset=part.start * vol.info.block_size)
+        try:
             fs_offset = part.start * vol.info.block_size
+            fs = pytsk3.FS_Info(img_info, offset=fs_offset)
+            fs_info = fs.info # TSK_FS_INFO
+            if (fs_info.ftype != pytsk3.TSK_FS_TYPE_NTFS):
+                print("[-] Skipping non-NTFS partition at {}".format(fs_offset))
+                continue
+            print("[+] Opened partition at offset " + str(fs_offset))
+        except IOError:
+                _, e, _ = sys.exc_info()
+                if "file system type" in str(e):
+                    print("[-] Unable to open FS, unrecognized type at {}".format(fs_offset))
+                continue
 
-    # Extract the registry hives
-    hives = {
-        "HKLM\\SYSTEM": "C:\\Windows\\System32\\config\\SYSTEM",
-        "HKLM\\SAM": "C:\\Windows\\System32\\config\\SAM",
-        "HKLM\\SECURITY": "C:\\Windows\\System32\\config\\SECURITY",
-        "HKLM\\SOFTWARE": "C:\\Windows\\System32\\config\\SOFTWARE",
-        "HKU\\UserProfile": "C:\\Users\\Default\\NTUSER.DAT",
-        "HKU\\DEFAULT": "C:\\Windows\\System32\\config\\DEFAULT"
-    }
+        root_dir = fs.open_dir("/")
 
-    with open(os.path.join(registry_output_dir, "registry.csv"), "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["Hive", "Key Path", "Value Name", "Value Type", "Value Data", "Created At", "Modified At", "Deleted At"])
+        config_folder = find_file(b"Windows/System32/config", fs, root_dir)
 
-        for hive_name, hive_path in hives.items():
+        if config_folder is None:
+            print("[-] Couldn't find folder containing registry files")
+            continue
+
+        # Recursively parse config looking for registry files
+        print("[+] Looking for registry files recursively in Windows\System32\config\n")
+        data = recurse_files(1, fs, config_folder.as_directory(), [], [], [""])
+
+        with open(os.path.join(registry_output_dir, "registry.csv"), "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Hive", "Key Path", "Value Name", "Value Type", "Value Data", "Created At", "Modified At", "Deleted At"])
+
+            for reg_info in data:
+                hive = reg_info[0]
+                key_path = reg_info[-1]
+                created_at = reg_info[4]
+                modified_at = reg_info[5]
+                deleted_at = reg_info[6]
+                writer.writerow([hive, key_path, "", "", "", created_at, modified_at, deleted_at])
+
+
+def recurse_files(part, fs, root_dir, dirs, data, parent):
+    dirs.append(root_dir.info.fs_file.meta.addr)
+    for fs_object in root_dir:
+        # Skip ".", ".." or directory entries without a name.
+        if not hasattr(fs_object, "info") or \
+                not hasattr(fs_object.info, "name") or \
+                not hasattr(fs_object.info.name, "name") or \
+                fs_object.info.name.name in [".", ".."]:
+            continue
+        try:
+            file_name = fs_object.info.name.name
+            file_path = "{}/{}".format(str(parent), str(file_name))
+            if file_name in [b"SYSTEM", b"SAM", b"SECURITY", b"SOFTWARE", b"NTUSER.DAT", b"DEFAULT"]:
+                if "RegBack" in file_path:
+                    print("[+] Found backup registry hive: {}".format(file_name))
+                    offset = fs_object.info.meta.addr * fs.info.block_size
+                    create = convert_time(fs_object.info.meta.crtime)
+                    change = convert_time(fs_object.info.meta.ctime)
+                    modify = convert_time(fs_object.info.meta.mtime)
+                    size = fs_object.info.meta.size
+
+                    # oh wow i love python so con
+                    data.append(["PARTITION {}".format(part), str(file_name), file_ext,
+                        f_type, create, change, modify, size,"Windows\\System32\\config\\{}".format("".join(file_path).replace("/", "\\"))])
+                else:
+                    print("[+] Found registry hive: {}".format(file_name))
+                    offset = fs_object.info.meta.addr * fs.info.block_size
+                    create = convert_time(fs_object.info.meta.crtime)
+                    change = convert_time(fs_object.info.meta.ctime)
+                    modify = convert_time(fs_object.info.meta.mtime)
+                    size = fs_object.info.meta.size
+
+                    #TODO FIX THIS SHIT
+                    data.append(["PARTITION {}".format(part), str(file_name), file_ext,
+                        f_type, create, change, modify, size,"Windows\\System32\\config\\{}".format("".join(file_path).replace("/", "\\"))])
+
             try:
-                print(f"Parsing {hive_name} hive...")
-                key = fs.open(hive_path)
-                parse_key(hive_name, key, writer)
-                key.close()
-            except Exception as e:
-                print(f"Error parsing {hive_name} hive: {e}")
+                if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
+                    f_type = b"DIR"
+                    file_ext = b""
+                else:
+                    f_type = b"FILE"
+                    if b"." in file_name:
+                        file_ext = file_name.rsplit(b".")[-1].lower()
+                    else:
+                        file_ext = b""
+            except AttributeError:
+                continue
 
+            if f_type == b"DIR" and fs_object.info.name.name != (b".." or b"."):
+                parent.append(fs_object.info.name.name)
+                sub_directory = fs_object.as_directory()
+                inode = fs_object.info.meta.addr
 
-    def parse_key(hive_name, key, writer):
-        for value in key.recurse_values():
-            writer.writerow([
-                hive_name,
-                key.info.fs_file.path,
-                value.name,
-                pyregf.data_types.REGF_VALUE_TYPES.get(value.type, "Unknown"),
-                value.data_as_string(),
-                value.get_time_created_as_integer(),
-                value.get_time_modified_as_integer(),
-                value.get_time_deleted_as_integer()
-            ])
+                # This ensures that we don't recurse into a directory
+                # above the current level and thus avoid circular loops.
+                if inode not in dirs:
+                    recurse_files(part, fs, sub_directory, dirs, data, parent)
+                parent.pop(-1)
 
-        for sub_key in key.sub_keys():
-            try:
-                parse_key(hive_name, sub_key, writer)
-            except Exception as e:
-                print(f"Error parsing {hive_name}\\{sub_key.name}: {e}")
+        except IOError:
+            continue
+    dirs.pop(-1)
+    return data
+
+def find_file(path, fs, root_dir):
+    """
+    Recursively search for a file with the given path
+    """
+    components = path.split(b'/')
+    for fs_object in root_dir:
+        if fs_object.info.name.name == components[0]:
+            if len(components) == 1:
+                # Found the file, return the fs_object
+                return fs_object
+            elif fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
+                # Recurse into the directory
+                sub_dir = fs_object.as_directory()
+                inode = fs_object.info.meta.addr
+                return find_file(b'/'.join(components[1:]), fs, sub_dir)
+    # If we get here, the file was not found
+    return None
+
+def convert_time(ts):
+    if str(ts) == "0":
+        return ""
+    return datetime.utcfromtimestamp(ts)
