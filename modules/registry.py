@@ -33,12 +33,12 @@ class RegistryExtractor:
         
         # Certain process_fs_object calls may want to process entire directories.
         # Leave empty if it's files you want
-        # Unimplemented for now
+        # Unimplemented for now TODO in disk_utils.py
         self.processable_directories = []
 
         # Starting path for files we're interested it, allows us to optimize recursion
         # by only recursing into directories we're interested in. Leave empty for all of them.
-        # TODO: Should be a list of paths like filenames
+        # TODO: Should be a list of paths like filenames, implement in disk_utils.py
         self.starting_path = "Windows\System32\config".lower()
 
         # CSV file for registry hive file info
