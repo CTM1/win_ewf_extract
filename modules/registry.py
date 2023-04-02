@@ -99,7 +99,6 @@ class RegistryExtractor:
                     break
                 i += 1
 
-        print("writing " + filename)
         with open(outfile_path, "wb") as outfile:
             outfile.write(fs_object.read_random(0, fs_object.info.meta.size))
 

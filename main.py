@@ -45,12 +45,7 @@ def main():
 
     for fs in filesystems:
         root_dir = fs.open_dir("/")
-
-        def process_fs_object_callback(fs_object):
-            for extractor in extractors:
-                extractor.process_fs_object(fs_object)
-
-        dutils.recurse_files(fs, root_dir, [], [""], process_fs_object_callback, extractors) 
+        dutils.recurse_files(fs, root_dir, [], [""], extractors) 
 
 if __name__ == '__main__':
     main()

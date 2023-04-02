@@ -49,7 +49,7 @@ def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
     return fs_partitions
 
 
-def recurse_files(fs, root_dir, dirs, parent, callback, extractors):
+def recurse_files(fs, root_dir, dirs, parent, extractors):
     dirs.append(root_dir.info.fs_file.meta.addr)
     for fs_object in root_dir:
         # Skip ".", ".." or directory entries without a name.
@@ -103,7 +103,7 @@ def recurse_files(fs, root_dir, dirs, parent, callback, extractors):
                     # This ensures that we don't recurse into a directory
                     # above the current level and thus avoid circular loops.
                     if inode not in dirs:
-                        recurse_files(fs, sub_directory, dirs, parent, callback, extractors)
+                        recurse_files(fs, sub_directory, dirs, parent, extractors)
                     parent.pop(-1)
 
         except IOError:
