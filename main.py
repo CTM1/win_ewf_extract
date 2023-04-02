@@ -1,10 +1,14 @@
-import modules.registry
+import modules.registry as reg_mod
+import modules.disk_utils as dutils
 
 import importlib
 import argparse
 import yaml
 import glob
 import os
+
+import pytsk3
+import pyewf
 
 def main():
     # Arguments and help
@@ -22,10 +26,31 @@ def main():
     with open(args.cfg) as f:
         config = yaml.safe_load(f)
 
-    for module_name, extract in config.items():
-        if extract:
-            module = importlib.import_module("modules." + module_name)
-            module.extract(args.ewf_file, args.output, config)
+    if args.output is None:
+        args.output = output_dir
+
+    extractors = []
+    if config['registry']:
+        extractors.append(reg_mod.RegistryExtractor(args.output, config))
+
+    ewf_handle = pyewf.handle()
+    files = pyewf.glob(args.ewf_file)
+    ewf_handle.open(files)
+
+    img_info = dutils.EWFImgInfo(ewf_handle)
+
+    vol = pytsk3.Volume_Info(img_info)
+
+    filesystems = dutils.find_file_systems(img_info)
+
+    for fs in filesystems:
+        root_dir = fs.open_dir("/")
+
+        def process_fs_object_callback(fs_object):
+            for extractor in extractors:
+                extractor.process_fs_object(fs_object)
+
+        dutils.recurse_files(fs, root_dir, [], [""], process_fs_object_callback, extractors) 
 
 if __name__ == '__main__':
     main()
