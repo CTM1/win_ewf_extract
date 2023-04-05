@@ -7,18 +7,18 @@ from datetime import datetime
 import pytsk3
 import pyewf
 
-import modules.artifact_extraction
+from modules.artifact_extraction import ArtifactExtractor
 import modules.disk_utils
 
 #TODO: Extend this class so it extracts registry key/value pairs to a .csv aswell
 #TODO: Specify registry values which we want to extract
-class RegistryExtractor:
+class RegistryExtractor(ArtifactExtractor):
     def __init__(self, output_dir, config):
         # Path to output directory
         self.output_dir = output_dir
         # Output directory inside registry directory
         self.registry_output_dir = os.path.join(output_dir, "registry")
- 
+
         try:
             os.mkdir(self.registry_output_dir)
         except FileExistsError:
@@ -30,7 +30,7 @@ class RegistryExtractor:
         # TODO: Support extensions, as you can see, NTUSER.DAT is the prime example of why extensions
         # may not be as trivial as they should.
         self.processable_file_names = ["system", "sam", "security", "software", "ntuser.dat", "default"]
-        
+
         # Certain process_fs_object calls may want to process entire directories.
         # Leave empty if it's files you want
         # Unimplemented for now TODO in disk_utils.py
