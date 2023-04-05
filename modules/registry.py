@@ -85,6 +85,7 @@ class RegistryExtractor(ArtifactExtractor):
             os.makedirs(output_dir)
 
         filename = name.decode("utf-8")
+        filename = filename + ext
         outfile_path = os.path.join(output_dir, filename)
 
         # Ugly file name hack
