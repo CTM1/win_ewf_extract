@@ -1,8 +1,0 @@
-registry: true
-keys_to_extract:
-  - hive_name: system
-    key_path: ControlSet001\Control\ComputerName\ComputerName
-    value_name: ComputerName
-  - hive_name: sam
-    key_path: SAM\Domains\Account\Users\Names
-    value_name: ""
