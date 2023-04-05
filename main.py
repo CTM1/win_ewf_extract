@@ -1,4 +1,4 @@
-import modules.registry as reg_mod
+from modules.registry import RegistryExtractor
 import modules.disk_utils as dutils
 
 import importlib
@@ -29,9 +29,21 @@ def main():
     if args.output is None:
         args.output = output_dir
 
+    # Mapping of extractors we could have
+    extractor_classes = {
+        "registry": RegistryExtractor,
+        # "chrome": ChromeExtractor,
+        # "firefox": FirefoxExtractor,
+        # "edge": EdgeExtractor,
+        # "event_logs": EventLogExtractor,
+        # "mft": MFTExtractor,
+    }
+
+    # Adding those to the extractors array
     extractors = []
-    if config['registry']:
-        extractors.append(reg_mod.RegistryExtractor(args.output, config))
+    for extractor_name, extractor_class in extractor_classes.items():
+        if isinstance(config.get(extractor_name), bool) and config[extractor_name]:
+            extractors.append(extractor_class(args.output, config))
 
     ewf_handle = pyewf.handle()
     files = pyewf.glob(args.ewf_file)
@@ -45,7 +57,7 @@ def main():
 
     for fs in filesystems:
         root_dir = fs.open_dir("/")
-        dutils.recurse_files(fs, root_dir, [], [""], extractors) 
+        dutils.recurse_files(fs, root_dir, [], [""], extractors)
 
 if __name__ == '__main__':
     main()
