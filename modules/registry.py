@@ -139,18 +139,6 @@ class RegistryExtractor(ArtifactExtractor):
         filename = filename + ext
         outfile_path = os.path.join(output_dir, filename)
 
-        # Ugly file name hack
-        if os.path.exists(outfile_path):
-            i = 1
-            while True:
-                new_filename = filename + f"({i})"
-                new_outfile_path = os.path.join(output_dir, new_filename)
-                if not os.path.exists(new_outfile_path):
-                    filename = new_filename
-                    outfile_path = new_outfile_path
-                    break
-                i += 1
-
         with open(outfile_path, "wb") as outfile:
             outfile.write(fs_object.read_random(0, fs_object.info.meta.size))
 
