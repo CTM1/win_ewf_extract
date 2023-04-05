@@ -43,6 +43,9 @@ class RegistryExtractor(ArtifactExtractor):
         # TODO: Should be a list of paths like filenames, implement in disk_utils.py
         self.starting_path = "Windows\System32\config".lower()
 
+        # Get keys from config
+        self.keys_to_extract = self.parse_keys_to_extract(config)
+
         # CSV file for registry hive file info
         self.hive_csv_file = open(os.path.join(self.registry_output_dir, "registry_hive_files.csv"), "w+", newline="", encoding="utf-8")
 
@@ -77,24 +80,13 @@ class RegistryExtractor(ArtifactExtractor):
                 print("[-] Error parsing registry hive: {}".format(e))
                 return
 
-            # TODO: Replace this with a list specified in the YAML file
-            keys_to_extract = [
-                # Default keys for each registry hive
-                ("system", "ControlSet001\\Control\\ComputerName\\ComputerName", "ComputerName"),
-                ("sam", "SAM\\Domains\\Account\\Users\\Names", ""),
-                ("security", "Policy\\PolAdtEv", "AuditPolicy"),
-                ("software", "Microsoft\\Windows\\CurrentVersion\\Run", ""),
-                ("ntuser.dat", "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Shell Folders"),
-                ("default", "Software\\Microsoft\\Windows\\CurrentVersion\\Run", ""),
-            ]
-
             csv_file_name = f"{file_name.decode('utf-8')}_keys.csv"
             csv_file_path = os.path.join(self.registry_output_dir, csv_file_name)
             with open(csv_file_path, "w+", newline="", encoding="utf-8") as csv_file:
                 writer = csv.writer(csv_file)
                 writer.writerow(["Hive Path", "Key Path", "Value Name", "Value Type", "Value Data", "Created At"])
 
-                for hive_name, key_path, value_name in keys_to_extract:
+                for hive_name, key_path, value_name in self.keys_to_extract:
                     if hive_name.lower() == file_name.decode("utf-8").lower():
                         try:
                             key = registry.open(key_path)
@@ -161,6 +153,27 @@ class RegistryExtractor(ArtifactExtractor):
 
         with open(outfile_path, "wb") as outfile:
             outfile.write(fs_object.read_random(0, fs_object.info.meta.size))
+
+    def parse_keys_to_extract(self, config):
+        # Default if nothing in config
+        keys_to_extract = [
+            ("system", "ControlSet001\\Control\\ComputerName\\ComputerName", "ComputerName"),
+            ("sam", "SAM\\Domains\\Account\\Users\\Names", ""),
+            ("security", "Policy\\PolAdtEv", "AuditPolicy"),
+            ("software", "Microsoft\\Windows\\CurrentVersion\\Run", ""),
+            ("ntuser.dat", "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Shell Folders"),
+            ("default", "Software\\Microsoft\\Windows\\CurrentVersion\\Run", ""),
+        ]
+
+        if "keys_to_extract" in config:
+            keys_to_extract = []
+            for key in config["keys_to_extract"]:
+                hive_name = key["hive_name"]
+                key_path = key["key_path"]
+                value_name = key["value_name"]
+                keys_to_extract.append((hive_name, key_path, value_name))
+
+        return keys_to_extract
 
     def convert_time(self, timestamp):
         return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
