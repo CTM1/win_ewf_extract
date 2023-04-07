@@ -1,2 +1,5 @@
-browsers:
-  chrome: true
+browsers: true
+browsers_to_extract:
+    chrome: true
+    firefox: true
+    edge: true

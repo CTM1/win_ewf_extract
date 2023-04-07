@@ -33,38 +33,37 @@ class BrowserExtractor(ArtifactExtractor):
         self.processable_file_names = []
 
         # Unimplemented for now TODO in disk_utils.py
-        self.processable_directories = []
+        self.processable_directories = ["users"]
 
-        # Here the user path can have many names
+        # Here the User path can have many names
         # We'll use this class to launch browser extractors on different Users and get their AppData folder
-        self.starting_path = "Users".lower()
+        self.starting_path = "\\".lower()
 
-        # Get keys from config
         self.browsers_to_search = self.parse_browsers_from_config(config)
 
         # CSV file for registry hive file info
-        self.browser_csv_file = open(os.path.join(self.registry_output_dir, "browser_files.csv"), "w+", newline="", encoding="utf-8")
+        self.browser_csv_file = open(os.path.join(self.browser_output_dir, "browser_files.csv"), "w+", newline="", encoding="utf-8")
 
-        self.writer = csv.writer(self.hive_csv_file)
+        self.writer = csv.writer(self.browser_csv_file)
 
-    def __del__(self):
-        self.hive_csv_file.close()
+    def parse_browsers_from_config(self, config):
+        browsers = []
+        if config.get("browsers"):
+            if config.get("browsers_to_extract"):
+                for browser_name, enabled in config["browsers_to_extract"].items():
+                    if enabled:
+                        browsers.append(browser_name)
+            else:
+                # Add all supported browsers if 'browsers_to_extract' is not present
+                browsers = ["chrome", "firefox", "edge"]
+        return browsers
 
-
-def parse_browsers_from_config(self, config):
-    browsers = []
-    if config.get("browsers"):
-        for browser_name, enabled in config["browsers"].items():
-            if enabled:
-                browsers.append(browser_name)
-    return browsers
-
-def process_fs_object(self, fs_object, file_path):
-    print("[+] Found Users folder")
-    if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
-        user_path = file_path.decode("utf-8")
-        for browser in self.browsers_to_search:
-            browser_output_dir = os.path.join(self.browser_output_dir, browser)
-            browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
-            browser_extractor = browser_extractor_class(user_path, self.output_dir, self.config)
-            browser_extractor.process()
+    def process_fs_object(self, fs_object, file_path):
+        print("[+] Found Users folder")
+        if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
+            user_path = file_path.decode("utf-8")
+            for browser in self.browsers_to_search:
+                browser_output_dir = os.path.join(self.browser_output_dir, browser)
+                browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
+                browser_extractor = browser_extractor_class(user_path, self.output_dir, self.config)
+                browser_extractor.process()
