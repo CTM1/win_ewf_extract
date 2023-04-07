@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+import sqlite3
 import subprocess
 from datetime import datetime
 
@@ -12,8 +13,7 @@ import modules.disk_utils
 
 class BrowserExtractor(ArtifactExtractor):
     """This class goes into the Users folders and launches the BrowserExtraction for each user according to the Extractors
-    defined in the configuration file.
-
+        in the configuration file.
     Args:
         ArtifactExtractor (_superclass_): Extends ArtifactExtractor
     """
@@ -58,12 +58,36 @@ class BrowserExtractor(ArtifactExtractor):
                 browsers = ["chrome", "firefox", "edge"]
         return browsers
 
+    # NOT WORKING ===========
     def process_fs_object(self, fs_object, file_path):
         print("[+] Found Users folder")
+        # TODO: Open the users folder, check all folders in it and pass the specific user folder to browser extractors
+        # put this code inside a loop
         if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
             user_path = file_path.decode("utf-8")
             for browser in self.browsers_to_search:
                 browser_output_dir = os.path.join(self.browser_output_dir, browser)
                 browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
-                browser_extractor = browser_extractor_class(user_path, self.output_dir, self.config)
-                browser_extractor.process()
+                browser_extractor = browser_extractor_class(user_path, self.output_dir, self.config, userdir_fs_object)
+                browser_extractor.process_fs_object(fs_object, user_path)
+
+class ChromeExtractor(BrowserExtractor):
+    def __init__(self, output_dir, config, username_fs_object):
+        super().__init__(output_dir, config)
+        self.username_fs_object = username_fs_object
+        self.chrome_output_dir = os.path.join(self.browser_output_dir, "chrome")
+
+        try:
+            os.mkdir(self.chrome_output_dir)
+        except FileExistsError:
+            pass
+
+        self.chrome_base_path = "Users\\{}\\AppData\\Local\\Google\\Chrome\\Default".format(username_fs_object.info.name.name.decode("utf-8"))
+        self.processable_file_names = ["History", "Archived History", "Cookies", "Login Data", "Web Data", "Shortcuts", "Top Sites"]
+
+
+
+class FirefoxExtractor(BrowserExtractor):
+    pass
+class EdgeExtractor(BrowserExtractor):
+    pass
