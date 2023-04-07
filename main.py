@@ -1,4 +1,5 @@
 from modules.registry import RegistryExtractor
+from modules.browser import BrowserExtractor
 import modules.disk_utils as dutils
 
 import importlib
@@ -32,11 +33,7 @@ def main():
     # Mapping of extractors we could have
     extractor_classes = {
         "registry": RegistryExtractor,
-        # "chrome": ChromeExtractor,
-        # "firefox": FirefoxExtractor,
-        # "edge": EdgeExtractor,
-        # "event_logs": EventLogExtractor,
-        # "mft": MFTExtractor,
+        "browsers": BrowserExtractor,
     }
 
     # Adding those to the extractors array
