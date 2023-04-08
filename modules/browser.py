@@ -58,23 +58,23 @@ class BrowserExtractor(ArtifactExtractor):
                 browsers = ["chrome", "firefox", "edge"]
         return browsers
 
-    # NOT WORKING ===========
+    # fs_object here is the "Users" folder, we iterate over each folder and give it to the child browser
+    # extractors.
     def process_fs_object(self, fs_object, file_path):
-        print("[+] Found Users folder")
-        # TODO: Open the users folder, check all folders in it and pass the specific user folder to browser extractors
-        # put this code inside a loop
-        if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
-            user_path = file_path.decode("utf-8")
-            for browser in self.browsers_to_search:
-                browser_output_dir = os.path.join(self.browser_output_dir, browser)
-                browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
-                browser_extractor = browser_extractor_class(user_path, self.output_dir, self.config, userdir_fs_object)
-                browser_extractor.process_fs_object(fs_object, user_path)
+        print("[+] Found Users folder - Iterating over them...")
+        for user_folder in fs_object:
+            if user_folder.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
+                for browser in self.browsers_to_search:
+                    browser_output_dir = os.path.join(self.browser_output_dir, browser, user_folder.info.name.name)
+                    browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
+                    browser_extractor = browser_extractor_class(browser_output_dir, self.config)
+                    browser_extractor.process_fs_object(fs_object, user_folder)
 
 class ChromeExtractor(BrowserExtractor):
     def __init__(self, output_dir, config, username_fs_object):
         super().__init__(output_dir, config)
         self.username_fs_object = username_fs_object
+        self.user_folder_path = user_folder_path
         self.chrome_output_dir = os.path.join(self.browser_output_dir, "chrome")
 
         try:
@@ -82,9 +82,10 @@ class ChromeExtractor(BrowserExtractor):
         except FileExistsError:
             pass
 
-        self.chrome_base_path = "Users\\{}\\AppData\\Local\\Google\\Chrome\\Default".format(username_fs_object.info.name.name.decode("utf-8"))
         self.processable_file_names = ["History", "Archived History", "Cookies", "Login Data", "Web Data", "Shortcuts", "Top Sites"]
 
+    def process_fs_object(self, fs_object, file_path):
+        pass
 
 
 class FirefoxExtractor(BrowserExtractor):
