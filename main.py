@@ -55,9 +55,10 @@ def main():
     vol = pytsk3.Volume_Info(img_info)
     filesystems = dutils.find_file_systems(img_info)
     for fs in filesystems:
-        print(fs)
+        
         root_dir = fs.open_dir("/")
         dutils.recurse_files(fs, root_dir, [], [""], extractors)
+        
 
 if __name__ == '__main__':
     main()

@@ -50,8 +50,10 @@ def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
 
 
 def recurse_files(fs, root_dir, dirs, parent, extractors):
+
     dirs.append(root_dir.info.fs_file.meta.addr)
     for fs_object in root_dir:
+        
         # Skip ".", ".." or directory entries without a name.
         if not hasattr(fs_object, "info") or \
                 not hasattr(fs_object.info, "name") or \
@@ -61,12 +63,15 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
         try:
             # Set wether fs_object is file or directory
             try:
+                
                 if fs_object.info.meta.type == pytsk3.TSK_FS_META_TYPE_DIR:
                     f_type = b"DIR"
                     file_ext = b""
                 else:
                     f_type = b"FILE"
                     file_name = fs_object.info.name.name
+                    if ".evtx" in str(file_name):
+                        pass
                     
                     if b"." in file_name:
                         file_ext = file_name.rsplit(b".")[-1].lower()
@@ -76,6 +81,7 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
                     for extractor in extractors:
                         if file_name.decode("utf-8").lower() in extractor.processable_file_names:
                             file_path = b"\\".join(parent[1:])
+                           
                             extractor.process_fs_object(fs_object, file_path)
 
             except AttributeError:

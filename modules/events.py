@@ -13,7 +13,7 @@ from Registry import Registry
 from modules.artifact_extraction import ArtifactExtractor
 import modules.disk_utils
 
-class EventLogExtractor():
+class EventLogExtractor(ArtifactExtractor):
     # le paramétre config et le fichier de conf yaml
     def __init__(self, output_dir, config):
         print("hello cccccwordl", config)
@@ -31,6 +31,7 @@ class EventLogExtractor():
 
         #############################################
         ## warning zone in progress 
+        #self.process_fs_object(self.starting_path, self.processable_file_names)
         self.event_to_extract = self.parse_event_to_extract(config)
 
 
@@ -42,20 +43,24 @@ class EventLogExtractor():
         self.writer = csv.writer(self.evtx_csv_file)
         self.writer.writerow(["Event ID"])
         
-
+        
 
     #def process_fs_object(self, fs_object, file_path):
-    def process_fs_object(self, fs_object, file_path):
-        print("--------" ,file_path)
+    def process_fs_object(self,fs_object,file_path):
+        print("inside the fs object")
         try:
-            file_name = fs_object.info.name.name
-            if "ElfFile".lower() in file_path.decode("utf-8").lower():
+            file_name = b'Security.evtx'
+            print
+            print(file_path)
+            if "Logs".lower() in file_path.lower():
                 print("[+] ------------- EVTX file found")
+            else: 
+                print("dont find the evtx file")
         except IOError:
+            print("i pas in the exept")
             pass
 
     def parse_event_to_extract(self, config):
-        print("enter the event value") 
         if "events_to_extract" in config:
             event_to_extract = []
             for event in config["events_to_extract"]:
