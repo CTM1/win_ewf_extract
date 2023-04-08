@@ -1,4 +1,11 @@
-events: true
+event_logs: true
 events_to_extract:
   - journal_name: security
+    # parse for only tis event. 
+    events: ['4624', '4625', '4688', '1100', '1102']
+  - journal_name: Security
+    # parse for only tis event. 
+    events: ['4624', '4625', '4688', '1100', '1102']
+  - journal_name: SECURITY
+    # parse for only tis event. 
     events: ['4624', '4625', '4688', '1100', '1102']

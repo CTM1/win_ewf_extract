@@ -1,4 +1,5 @@
 from modules.registry import RegistryExtractor
+from modules.events import EventLogExtractor
 import modules.disk_utils as dutils
 
 import importlib
@@ -35,7 +36,7 @@ def main():
         # "chrome": ChromeExtractor,
         # "firefox": FirefoxExtractor,
         # "edge": EdgeExtractor,
-        # "event_logs": EventLogExtractor,
+        "event_logs": EventLogExtractor,
         # "mft": MFTExtractor,
     }
 
@@ -52,7 +53,6 @@ def main():
 
     img_info = dutils.EWFImgInfo(ewf_handle)
     vol = pytsk3.Volume_Info(img_info)
-    #### 
     filesystems = dutils.find_file_systems(img_info)
     for fs in filesystems:
         print(fs)

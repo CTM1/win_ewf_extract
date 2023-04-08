@@ -28,7 +28,7 @@ class RegistryExtractor(ArtifactExtractor):
 
         # File names to process if found on recurse_files, leave empty for all of them.
         # Do not use extensions for them !
-        
+
         # TODO: Support extensions, as you can see, NTUSER.DAT is the prime example of why extensions
         # may not be as trivial as they should.
         self.processable_file_names = ["system", "sam", "security", "software", "ntuser.dat", "default"]
