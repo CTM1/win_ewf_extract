@@ -13,11 +13,11 @@ import pyewf
 
 def main():
     # Arguments and help
-    parser = argparse.ArgumentParser(description='Windows EWF Artifact Extractor')
-    parser.add_argument("-c","--cfg", type=str, help='YAML configuration file - Possible fields: extract_registry\nextract_browsers\nextract_event_logs\nextract_mft')
-    parser.add_argument("-o", "--output", type=str, help="Output directory for extracted artifacts - ./output by default")
-    parser.add_argument("-f","--ewf_file", type=str, help='Path to first Encase Windows file (.E01 extension)')
-    args = parser.parse_args()
+    ext_parser = argparse.ArgumentParser(description='Windows EWF Artifact Extractor')
+    ext_parser.add_argument("-c","--cfg", type=str, help='YAML configuration file - Possible fields: extract_registry\nextract_browsers\nextract_event_logs\nextract_mft')
+    ext_parser.add_argument("-o", "--output", type=str, help="Output directory for extracted artifacts - ./output by default")
+    ext_parser.add_argument("-f","--ewf_file", type=str, help='Path to first Encase Windows file (.E01 extension)')
+    args = ext_parser.parse_args()
 
     output_dir = args.output or "output"
     if not os.path.exists(output_dir):
