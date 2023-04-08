@@ -52,6 +52,8 @@ def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
 def recurse_files(fs, root_dir, dirs, parent, extractors):
     dirs.append(root_dir.info.fs_file.meta.addr)
     for fs_object in root_dir:
+        if ".evtx" in fs_object:
+            print("found evtx in file system")
         # Skip ".", ".." or directory entries without a name.
         if not hasattr(fs_object, "info") or \
                 not hasattr(fs_object.info, "name") or \
@@ -83,7 +85,6 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
 
             if f_type == b"DIR" and fs_object.info.name.name != (b".." or b"."):
                 current_path = b"\\".join(parent[1:])
-
                 # TODO: Implement processable_directories behaviour
                 # Callback to an extractors process_fs_object with a directory
                 # Much like above

@@ -47,15 +47,15 @@ def main():
 
     ewf_handle = pyewf.handle()
     files = pyewf.glob(args.ewf_file)
+    # les donnée en entrée 
     ewf_handle.open(files)
 
     img_info = dutils.EWFImgInfo(ewf_handle)
-
     vol = pytsk3.Volume_Info(img_info)
-
+    #### 
     filesystems = dutils.find_file_systems(img_info)
-
     for fs in filesystems:
+        print(fs)
         root_dir = fs.open_dir("/")
         dutils.recurse_files(fs, root_dir, [], [""], extractors)
 
