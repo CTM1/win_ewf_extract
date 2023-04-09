@@ -5,6 +5,8 @@ from analyzemft import mftsession
 
 
 class MftExtractor(ArtifactExtractor):
+    """MftExtractor is an implementation of ArtifactExtractor dedicated to
+    extracting the MFT."""
     def __init__(self, output_dir, config):
         self.n_mft = 0
         # Path to output directory
