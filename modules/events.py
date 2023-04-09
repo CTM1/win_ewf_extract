@@ -47,14 +47,14 @@ class EventLogExtractor(ArtifactExtractor):
 
     def extract_event_log(self, fs_object, output_file_path, events):
         """Write the .evtx to disk, then parse it's XML to filter for EventIDs"""
-        print("[+] Writing journal file to disk")
+        print("[EventLogExtractor] [+] Writing journal file to disk")
         journal_file_name = fs_object.info.name.name.decode("utf-8")
         journal_file_path = os.path.join(self.event_logs_output_dir, journal_file_name)
 
         with open(journal_file_path, "wb") as journal_file:
             journal_file.write(fs_object.read_random(0, fs_object.info.meta.size))
 
-        print("[+] Processing journal file to .xml")
+        print("[EventLogExtractor] [+] Processing journal file to .xml")
         with open(output_file_path, "w+", encoding="utf-8") as xml_file:
             xml_file.write(e_views.XML_HEADER)
             xml_file.write("<Events>\n")
