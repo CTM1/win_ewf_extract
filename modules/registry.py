@@ -12,10 +12,6 @@ from Registry import Registry
 from modules.artifact_extraction import ArtifactExtractor
 import modules.disk_utils
 
-# TODO: Extend this class so it extracts registry key/value pairs to a .csv aswell
-# TODO: Specify registry values which we want to extract
-
-
 class RegistryExtractor(ArtifactExtractor):
     """This class implements ArtifactExtractor to extract system Registry"""
     def __init__(self, output_dir, config):
@@ -29,22 +25,9 @@ class RegistryExtractor(ArtifactExtractor):
         except FileExistsError:
             pass
 
-        # File names to process if found on recurse_files, leave empty for all of them.
-        # Do not use extensions for them !
-
-        # TODO: Support extensions, as you can see, NTUSER.DAT is the prime example of why extensions
-        # may not be as trivial as they should.
         self.processable_file_names = [
             "system", "sam", "security", "software", "ntuser.dat", "default"]
-
-        # Certain process_fs_object calls may want to process entire directories.
-        # Leave empty if it's files you want
-        # Unimplemented for now TODO in disk_utils.py
         self.processable_directories = []
-
-        # Starting path for files we're interested it, allows us to optimize recursion
-        # by only recursing into directories we're interested in. Leave empty for all of them.
-        # TODO: Should be a list of paths like filenames, implement in disk_utils.py
         self.starting_path = "Windows\System32\config".lower()
 
         # Get keys from config
