@@ -84,7 +84,6 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
             if f_type == b"DIR" and fs_object.info.name.name != (b".." or b"."):
                 current_path = b"\\".join(parent[1:])
                 folder_name = fs_object.info.name.name
-                print(folder_name)
 
                 for extractor in extractors:
                     if folder_name.decode("utf-8").lower() in extractor.processable_directories:
