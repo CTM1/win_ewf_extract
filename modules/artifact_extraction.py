@@ -22,9 +22,6 @@ class ArtifactExtractor:
 
     @property
     def processable_file_names(self):
-        if not self._processable_file_names:
-            raise NotImplementedError(
-                    "Subclasses must implement processable_file_names")
         return self._processable_file_names
 
     @processable_file_names.setter
