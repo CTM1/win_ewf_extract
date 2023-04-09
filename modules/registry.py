@@ -49,7 +49,7 @@ class RegistryExtractor(ArtifactExtractor):
             file_name = fs_object.info.name.name
             if "RegBack".lower() in file_path.decode("utf-8").lower():
                 print(
-                    "[+] Found backup registry hive: {}".format(file_name.decode("utf-8")))
+                    "[RegistryExtractor] [+] Found backup registry hive: {}".format(file_name.decode("utf-8")))
                 self.write_registry_hive(fs_object, file_path, file_name, "")
                 self.hive_file_writer(
                     fs_object, file_name, ".regbak", self.registry_output_dir)
@@ -57,7 +57,7 @@ class RegistryExtractor(ArtifactExtractor):
                     self.registry_output_dir, file_name.decode("utf-8") + ".regbak")
                 self.extract_key_values(outfile_path, file_name)
             else:
-                print("[+] Found registry hive: {}".format(file_name.decode("utf-8")))
+                print("[RegistryExtractor] [+] Found registry hive: {}".format(file_name.decode("utf-8")))
                 self.write_registry_hive(fs_object, file_path, file_name, "")
                 self.hive_file_writer(
                     fs_object, file_name, "", self.registry_output_dir)
@@ -71,7 +71,7 @@ class RegistryExtractor(ArtifactExtractor):
         try:
             registry = Registry.Registry(file_path)
         except Registry.RegistryParse.ParseException as e:
-            print("[-] Error parsing registry hive: {}".format(e))
+            print("[RegistryExtractor] [-] Error parsing registry hive: {}".format(e))
             return
 
         csv_file_name = f"{file_name.decode('utf-8')}_keys.csv"
@@ -108,10 +108,10 @@ class RegistryExtractor(ArtifactExtractor):
                                     "utf-8"), key_path, value_name, value_type, value_data, create])
 
                     except Registry.RegistryKeyNotFoundException:
-                        print(f"[-] Registry key not found: {key_path}")
+                        print(f"[RegistryExtractor] [-] Registry key not found: {key_path}")
                     except Registry.RegistryValueNotFoundException:
                         print(
-                            f"[-] Registry key value not found: {value_name} in {key_path}")
+                            f"[RegistryExtractor] [-] Registry key value not found: {value_name} in {key_path}")
 
     def get_file_path(self, fs_object):
         file_path_parts = []

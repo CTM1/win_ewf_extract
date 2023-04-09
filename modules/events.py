@@ -38,7 +38,7 @@ class EventLogExtractor(ArtifactExtractor):
             events = journal["events"]
 
             if journal_name.lower() in file_name:
-                print(f"[+] Found event log: {file_name}")
+                print(f"[EventLogExtractor] [+] Found event log: {file_name}")
                 try:
                     output_file_path = os.path.join(self.event_logs_output_dir, f"{file_name}_events.xml")
                     self.extract_event_log(fs_object, output_file_path, events)

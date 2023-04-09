@@ -30,12 +30,12 @@ class MftExtractor(ArtifactExtractor):
             fs_object (File): The MFT file
             file_path (Path): The MFT file path
         """
-        print("[+] Found an MFT file")
-        print("[+] Writing MFT to disk")
+        print("[MftExtractor] [+] Found an MFT file")
+        print("[MftExtractor] [+] Writing MFT to disk")
         self.mft_file_writer(fs_object, "MFT", "({})".format(self.n_mft), self.mft_output_dir)
 
-        print("[+] Parsing MFT to .csv")
-        print("[*] This may take a while...")
+        print("[MftExtractor] [+] Parsing MFT to .csv")
+        print("[MftExtractor] [*] This may take a while...")
         session = mftsession.MftSession()
         session.mft_options()
 
@@ -69,3 +69,4 @@ class MftExtractor(ArtifactExtractor):
 
         with open(outfile_path, "wb") as outfile:
             outfile.write(fs_object.read_random(0, fs_object.info.meta.size))
+            print("[MftExtractor] [+] Successful\n")

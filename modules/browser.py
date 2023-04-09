@@ -58,7 +58,7 @@ class BrowserExtractor(ArtifactExtractor):
     # fs_object here is the "Users" folder, we iterate over each folder and give it to the child browser
     # extractors.
     def process_fs_object(self, fs_object, file_path):
-        print("[+] Found Users folder - iterating over each")
+        print("\n[BrowserExtractor] [+] Found Users folder - iterating over each\n")
         for user_folder in fs_object.as_directory():
             if hasattr(user_folder, "info") and \
                 hasattr(user_folder.info, "meta") and \
@@ -68,11 +68,11 @@ class BrowserExtractor(ArtifactExtractor):
                 for browser in self.browsers_to_search:
                     browser_output_dir = os.path.join(self.output_dir, "browsers", browser, user_folder.info.name.name.decode("utf8"))
                     browser_extractor_class = globals()[f"{browser.capitalize()}Extractor"]
-                    print(f"[+] Launching {browser.capitalize()} Extractor for user " + user_folder.info.name.name.decode("utf8"))
+                    print(f"[BrowserExtractor] [+] Launching {browser.capitalize()} Extractor for user " + user_folder.info.name.name.decode("utf8"))
                     try:
                         browser_extractor = browser_extractor_class(browser_output_dir, self.config, user_folder)
                     except Exception as e:
-                        print(f"Error occurred while executing {browser.capitalize()}Extractor: {e}")
+                        print(f"[BrowserExtractor] [-] Error occurred while executing {browser.capitalize()}Extractor: {e}")
 
 class ChromeExtractor(BrowserExtractor):
     def __init__(self, output_dir, config, fs_object):
@@ -119,14 +119,14 @@ class ChromeExtractor(BrowserExtractor):
                     entry_name = entry.info.name.name.decode("utf-8").lower()
                     if entry.info.meta is not None:
                         if entry.info.meta.type == pytsk3.TSK_FS_META_TYPE_REG and entry_name in self.processable_file_names:
-                            print(f"[+] Found artifact: {entry_name.capitalize()}, writing to disk...")
+                            print(f"[ChromeExtractor] [+] Found artifact: {entry_name.capitalize()}, writing to disk...")
                             self.write_file_to_disk(entry, self.output_dir)
 
     def write_file_to_disk(self, file_entry, output_file_path):
         with open(os.path.join(output_file_path, file_entry.info.name.name.decode("utf-8")), "wb") as output_file:
             file_data = file_entry.read_random(0, file_entry.info.meta.size)
             output_file.write(file_data)
-            print("[+] Successfully wrote to disk !")
+            print("[ChromeExtractor] [+] Successfully wrote to disk !")
 class EdgeExtractor(BrowserExtractor):
     def __init__(self, output_dir, config, fs_object):
         self.output_dir = output_dir
@@ -172,14 +172,14 @@ class EdgeExtractor(BrowserExtractor):
                     entry_name = entry.info.name.name.decode("utf-8").lower()
                     if entry.info.meta is not None:
                         if entry.info.meta.type == pytsk3.TSK_FS_META_TYPE_REG and entry_name in self.processable_file_names:
-                            print(f"[+] Found artifact: {entry_name.capitalize()}, writing to disk...")
+                            print(f"[EdgeExtractor] [+] Found artifact: {entry_name.capitalize()}, writing to disk...")
                             self.write_file_to_disk(entry, self.output_dir)
 
     def write_file_to_disk(self, file_entry, output_file_path):
         with open(os.path.join(output_file_path, file_entry.info.name.name.decode("utf-8")), "wb") as output_file:
             file_data = file_entry.read_random(0, file_entry.info.meta.size)
             output_file.write(file_data)
-            print("[+] Successfully wrote to disk !")
+            print("[EdgeExtractor] [+] Successfully wrote to disk !")
 
 class FirefoxExtractor(BrowserExtractor):
     def __init__(self, output_dir, config, fs_object):
