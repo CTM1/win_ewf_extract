@@ -45,7 +45,7 @@ def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
                 if "file system type" in str(e):
                     print("[-] Unable to open FS, unrecognized type at {}".format(fs_offset))
                 continue
-    
+
     return fs_partitions
 
 
@@ -67,12 +67,12 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
                 else:
                     f_type = b"FILE"
                     file_name = fs_object.info.name.name
-                    
+
                     if b"." in file_name:
                         file_ext = file_name.rsplit(b".")[-1].lower()
                     else:
                         file_ext = b""
-            
+
                     for extractor in extractors:
                         if file_name.decode("utf-8").lower() in extractor.processable_file_names:
                             file_path = b"\\".join(parent[1:])
@@ -83,10 +83,12 @@ def recurse_files(fs, root_dir, dirs, parent, extractors):
 
             if f_type == b"DIR" and fs_object.info.name.name != (b".." or b"."):
                 current_path = b"\\".join(parent[1:])
+                folder_name = fs_object.info.name.name
 
-                # TODO: Implement processable_directories behaviour
-                # Callback to an extractors process_fs_object with a directory
-                # Much like above
+                for extractor in extractors:
+                    if folder_name.decode("utf-8").lower() in extractor.processable_directories:
+                        folder_path = b"\\".join(parent[1:])
+                        extractor.process_fs_object(fs_object, folder_path)
 
                 # Check if any extractor's starting path starts with the current directory path
                 should_recurse = (any(
