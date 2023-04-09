@@ -8,10 +8,11 @@ keys_to_extract:
     value_name: ""
 browsers:
   chrome: true
-  firefox: true
   edge: true
-event_logs:
-  system: true
-  security: true
-  application: false
+events: true
+events_to_extract:
+  - journal_name: security
+    events: ['4624', '4625']
+  - journal_name: application
+  - journal_name: system
 mft: true
