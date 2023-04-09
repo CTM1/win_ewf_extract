@@ -6,13 +6,17 @@ keys_to_extract:
   - hive_name: sam
     key_path: SAM\Domains\Account\Users\Names
     value_name: ""
-browsers:
-  chrome: true
-  edge: true
+
+browsers: true
+browsers_to_extract:
+    chrome: true
+    edge: true
+
 events: true
 events_to_extract:
   - journal_name: security
     events: ['4624', '4625']
   - journal_name: application
   - journal_name: system
+
 mft: true
