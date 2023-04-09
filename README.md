@@ -1,11 +1,41 @@
+This project extracts and parses interesting files and data from a Windows EWF
+image.
+
+The main extracted files are:
+    - System registry
+    - User hives
+    - Internet Navigator History:
+        - Edge
+        - Internet Explorer
+        - Firefox
+        - Chrome
+    - The MFT
+    - Windows Event Logs
+
+# Documentation
+Documentation is made using [sphynx](), once the [requirements](#Requirements) are installed, you can generate it with
+
+```
+cd docs/ && make html && python3 -m http.server
+```
+
+Documentation will be disponible in your favorite web browser at [https://localhost:8000/](https://127.0.0.1:8000)
+
+Alternatively, you can read the PDF file named doc.pdf.
+
 # Requirements
+Python dependencies can be installed with using pip::
 
-You should have `sleuthkit` and `libtsk19` installed.
+```
+$ python3 -m pip install -r requirements.txt
+```
 
-On Debian-based systems:
+You will also need `sleuthkit` and `libtsk19` installed:
 
-`sudo apt-get install sleuthkit libtsk19`
+[Installation manual here](https://github.com/sleuthkit/sleuthkit/blob/develop/INSTALL.txt)
 
-If you don't have the sleuthkit package, you can read here about how to install it:
+On debian based systems::
 
-https://github.com/sleuthkit/sleuthkit/blob/develop/INSTALL.txt
+```
+# apt-get install sleuthkit libtsk19
+```
