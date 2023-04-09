@@ -1,3 +1,11 @@
+"""This file contains everything related to the actual EWF
+handling.
+
+It opens up the image, find the NTFS image and iterates
+over file using ArtifactExtractor derived classes to extract
+useful artifacts and pass them over to the related modules.
+"""
+
 import os
 import sys
 import csv
@@ -10,6 +18,8 @@ import pyewf
 # Stolen from the Python Foresics Cookbook
 # https://github.com/PacktPublishing/Python-Digital-Forensics-Cookbook
 class EWFImgInfo(pytsk3.Img_Info):
+    """This class represents a EWF image and contains everything needed
+    by the rest of the project."""
     def __init__(self, ewf_handle):
         self._ewf_handle = ewf_handle
         super(EWFImgInfo, self).__init__(url="",
@@ -26,6 +36,9 @@ class EWFImgInfo(pytsk3.Img_Info):
         return self._ewf_handle.get_media_size()
 
 def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
+    """
+    This function finds the various filesystems in a given EWF image.
+    """
     vol = pytsk3.Volume_Info(img_info)
     fs_partitions = []
 
@@ -50,6 +63,10 @@ def find_file_systems(img_info: EWFImgInfo) -> list[pytsk3.FS_Info]:
 
 
 def recurse_files(fs, root_dir, dirs, parent, extractors):
+    """
+    This function performs a recursive search over a filesystem
+    :meta private:
+    """
     dirs.append(root_dir.info.fs_file.meta.addr)
     for fs_object in root_dir:
         # Skip ".", ".." or directory entries without a name.
