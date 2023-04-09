@@ -43,6 +43,10 @@ class MftExtractor(ArtifactExtractor):
         print("[*] This may take a while...")
         session = mftsession.MftSession()
         session.mft_options()
+
+        # Leave this, or conflicting argument parsing options will write into your .csv
+        session.options.csvtimefile = None
+
         session.options.filename = os.path.join(self.mft_output_dir, "MFT({})".format(self.n_mft))
         session.options.output = os.path.join(self.mft_output_dir, "MFT_output({}).csv".format(self.n_mft))
 
