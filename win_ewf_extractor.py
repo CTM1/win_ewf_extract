@@ -15,6 +15,7 @@ The main extracted files are:
 
 from modules.registry import RegistryExtractor
 from modules.browser import BrowserExtractor
+from modules.events import EventLogExtractor
 from modules.mft import MftExtractor
 
 import modules.disk_utils as dutils
@@ -60,6 +61,7 @@ def main():
         "registry": RegistryExtractor,
         "browsers": BrowserExtractor,
         "mft": MftExtractor,
+        "events" : EventLogExtractor,
     }
 
     # Adding those to the extractors array
