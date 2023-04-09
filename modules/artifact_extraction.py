@@ -33,12 +33,8 @@ class ArtifactExtractor:
 
     @property
     def processable_directories(self):
-        if not self._processable_directories:
-            raise NotImplementedError(
-                    "Subclasses must implement processable_directory")
-        return self.processable_directories
+        return self._processable_directories
 
     @processable_directories.setter
     def processable_directories(self, processable_directories):
         self._processable_directories = processable_directories
-
