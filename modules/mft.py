@@ -19,24 +19,17 @@ class MftExtractor(ArtifactExtractor):
         except FileExistsError:
             pass
 
-        # File names to process if found on recurse_files, leave empty for all of them.
-        # Do not use extensions for them !
-        # TODO: Support extensions, as you can see, NTUSER.DAT is the prime example of why extensions
-        # may not be as trivial as they should.
-
         self.processable_file_names = ["$mft"]
-
-        # Certain process_fs_object calls may want to process entire directories.
-        # Leave empty if it's files you want
-        # Unimplemented for now TODO in disk_utils.py
         self.processable_directories = []
-
-        # Starting path for files we're interested it, allows us to optimize recursion
-        # by only recursing into directories we're interested in. Leave empty for all of them.
-        # TODO: Should be a list of paths like filenames, implement in disk_utils.py
         self.starting_path = "\\".lower()
 
     def process_fs_object(self, fs_object, file_path):
+        """Processes the MFT object using by extracting it to disk then using the analyzeMFT util.
+
+        Args:
+            fs_object (File): The MFT file
+            file_path (Path): The MFT file path
+        """
         print("[+] Found an MFT file")
         print("[+] Writing MFT to disk")
         self.mft_file_writer(fs_object, "MFT", "({})".format(self.n_mft), self.mft_output_dir)
