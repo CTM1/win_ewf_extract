@@ -2,7 +2,6 @@ import os
 import sys
 import csv
 from datetime import datetime
-from io import BytesIO
 
 import pytsk3
 import pyewf
