@@ -47,6 +47,7 @@ class EventLogExtractor(ArtifactExtractor):
                     print(f"[-] Error extracting events from {file_name}: {e}")
 
     def extract_event_log(self, fs_object, output_file_path, events):
+        """Write the .evtx to disk, then parse it's XML to filter for EventIDs"""
         print("[+] Writing journal file to disk")
         journal_file_name = fs_object.info.name.name.decode("utf-8")
         journal_file_path = os.path.join(self.event_logs_output_dir, journal_file_name)
