@@ -1,5 +1,5 @@
-from modules.registry import RegistryExtractor
-from modules.events import EventLogExtractor
+from .modules.registry import RegistryExtractor
+from .modules.events import EventLogExtractor
 import modules.disk_utils as dutils
 
 import importlib

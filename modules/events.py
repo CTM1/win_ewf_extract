@@ -21,10 +21,12 @@ class EventLogExtractor(ArtifactExtractor):
         self.output_dir = output_dir
         # Output directory inside registry directory
         self.evtx_output_dir = os.path.join(output_dir, "evtx")
+
         try:
             os.mkdir(self.evtx_output_dir)
         except FileExistsError:
             pass
+            
         self.processable_file_names = ["Applications.evtx","Setup.evtx","Security.evtx"]
         self.processable_directories = []	
         self.starting_path = "Windows\System32\Winevt\Logs".lower()
@@ -33,7 +35,6 @@ class EventLogExtractor(ArtifactExtractor):
         ## warning zone in progress 
         #self.process_fs_object(self.starting_path, self.processable_file_names)
         self.event_to_extract = self.parse_event_to_extract(config)
-
 
         #############################################
         
@@ -47,9 +48,10 @@ class EventLogExtractor(ArtifactExtractor):
 
     #def process_fs_object(self, fs_object, file_path):
     def process_fs_object(self,fs_object,file_path):
+        file_name = fs_object.info.name.name
         print("inside the fs object")
         try:
-            file_name = b'Security.evtx'
+            #file_name = b'Security.evtx'
             print
             print(file_path)
             if "Logs".lower() in file_path.lower():

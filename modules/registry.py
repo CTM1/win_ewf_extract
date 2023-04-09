@@ -9,8 +9,8 @@ import pyewf
 # From the python-registry library
 from Registry import Registry
 
-from modules.artifact_extraction import ArtifactExtractor
-import modules.disk_utils
+from .modules.artifact_extraction import ArtifactExtractor
+import .modules.disk_utils
 
 #TODO: Extend this class so it extracts registry key/value pairs to a .csv aswell
 #TODO: Specify registry values which we want to extract
