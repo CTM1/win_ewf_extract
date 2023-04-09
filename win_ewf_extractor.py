@@ -14,7 +14,6 @@ The main extracted files are:
 """
 
 from modules.registry import RegistryExtractor
-
 from modules.browser import BrowserExtractor
 from modules.mft import MftExtractor
 
